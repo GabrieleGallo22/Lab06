@@ -31,17 +31,45 @@ class Autonoleggio:
         self._responsabile = responsabile
 
     def get_automobili(self) -> list[Automobile] | None:
-        """
-            Funzione che legge tutte le automobili nel database
-            :return: una lista con tutte le automobili presenti oppure None
-        """
+        try:
+            conn =  get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT codice, marca, modello, anno, posti, disponibile FROM automobile;"
+            )
+            result = cursor.fetchall()
+            cursor.close()
+            conn.close()
+            if not result:
+                return None
 
-        # TODO
+            automobili = [Automobile(*row) for row in result]
+            return automobili
+        except mysql.connector.Error as e:
+            print(f"Errore DB in cerca_automobili_per_modello: {e}")
+            return None
 
     def cerca_automobili_per_modello(self, modello) -> list[Automobile] | None:
-        """
-            Funzione che recupera una lista con tutte le automobili presenti nel database di una certa marca e modello
-            :param modello: il modello dell'automobile
-            :return: una lista con tutte le automobili di marca e modello indicato oppure None
-        """
-        # TODO
+        try:
+            connect = get_connection()
+            cursor = connect.cursor()
+            cursor.execute(
+                "SELECT codice, marca, modello, anno, posti, disponibile "
+                "FROM automobile "
+                "WHERE modello LIKE %s;",
+                (f"%{modello}%",)
+            )
+
+            result = cursor.fetchall()
+            cursor.close()
+            connect.close()
+            if not result:
+                result = None
+
+            automobili = [Automobile(*row) for row in result]
+            return automobili
+        except mysql.connector.Error as e:
+            print(f"Errore DB in cerca_automobili_per_modello: {e}")
+            return None
+
+
